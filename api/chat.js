@@ -4,7 +4,7 @@ const MODEL = "gemini-flash-latest";
 const BUSINESS = {
   name: "Lagos Fresh Fashion",
   agent: "Amaka",
-  whatsapp: "2348000000000", // your number, format 234XXXXXXXXXX
+  whatsapp: "2347016706259", // your number, format 234XXXXXXXXXX
   delivery: "Lagos: 1-2 days. Other states: 3-5 days.",
   payment: "Pay on delivery in Lagos, or bank transfer. The owner confirms payment, not this chat.",
   returns: "7-day exchange policy."
