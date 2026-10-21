@@ -132,7 +132,7 @@ form.addEventListener("submit",async e=>{
     }
     if(data.handoff) card("",data.handoff.link,"Chat with a person on WhatsApp");
   }catch(err){
-    ty.remove(); msg("bot","Sorry, network issue. Please send that again.");
+    ty.remove(); msg("bot","Sorry, network issue. ("+err.message+")");
     history.pop(); // drop the failed question so the chat stays in order
   }
   send.disabled=false; inp.focus();
