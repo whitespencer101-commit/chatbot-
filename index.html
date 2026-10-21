@@ -70,9 +70,9 @@ h2{text-align:center;margin:28px 0 0}
 
 <script>
 // ===== EDIT THESE =====
-const API_URL = "/api/chat.js";
+const API_URL = "/api/chat";
 const AGENT = "Amaka";
-const WHATSAPP = "2347016706259"; // same number as in api/chat.js
+const WHATSAPP = "2348000000000"; // same number as in api/chat.js
 const WELCOME = "Hi, welcome to Lagos Fresh Fashion! I’m Amaka. What are you looking for today?";
 // ids must match api/chat.js. Add real "img" and "video" links when you have them.
 const MEDIA = {
@@ -106,15 +106,10 @@ function media(id,isVideo){
   const c=document.createElement("p"); c.textContent=p.name; d.appendChild(c);
   log.appendChild(d); down();
 }
-function orderCard(o){
+function card(text,link,label){
   const d=document.createElement("div"); d.className="order";
-  const pre=document.createElement("pre"); pre.textContent=o.summary; d.appendChild(pre);
-  const a=document.createElement("a"); a.href=o.link; a.target="_blank"; a.rel="noopener"; a.textContent="Send this order on WhatsApp"; d.appendChild(a);
-  log.appendChild(d); down();
-}
-function handoffCard(h){
-  const d=document.createElement("div"); d.className="order";
-  const a=document.createElement("a"); a.href=h.link; a.target="_blank"; a.rel="noopener"; a.textContent="Chat with a person on WhatsApp"; d.appendChild(a);
+  if(text){const pre=document.createElement("pre"); pre.textContent=text; d.appendChild(pre);}
+  const a=document.createElement("a"); a.href=link; a.target="_blank"; a.rel="noopener"; a.textContent=label; d.appendChild(a);
   log.appendChild(d); down();
 }
 
@@ -131,9 +126,15 @@ form.addEventListener("submit",async e=>{
     if(!data.reply && !data.order) throw new Error(data.error||"no reply");
     if(data.reply){ msg("bot",data.reply); history.push({role:"assistant",content:data.reply}); }
     (data.media||[]).forEach(m=>media(m.id,m.type==="vid"));
-    if(data.order){ orderCard(data.order); history.push({role:"assistant",content:"[Order request prepared and sent to the customer for WhatsApp. Not yet confirmed by the owner.]"}); }
-    if(data.handoff) handoffCard(data.handoff);
-  }catch(err){ ty.remove(); msg("bot","Sorry, network issue. Please send that again."); }
+    if(data.order){
+      card(data.order.summary,data.order.link,"Send this order on WhatsApp");
+      history.push({role:"assistant",content:"[Order request prepared for the customer to send on WhatsApp. Not yet confirmed by the owner.]"});
+    }
+    if(data.handoff) card("",data.handoff.link,"Chat with a person on WhatsApp");
+  }catch(err){
+    ty.remove(); msg("bot","Sorry, network issue. Please send that again.");
+    history.pop(); // drop the failed question so the chat stays in order
+  }
   send.disabled=false; inp.focus();
 });
 </script>
