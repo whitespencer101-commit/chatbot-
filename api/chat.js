@@ -1,4 +1,4 @@
-const MODEL = "llama-3.3-70b-versatile";
+const MODEL = "openai/gpt-oss-20b"; // backup: "openai/gpt-oss-120b"
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // ===== EDIT YOUR VERIFIED BUSINESS DATA =====
@@ -93,7 +93,7 @@ function parseModel(raw) {
 }
 
 async function askModel(messages) {
-  const call = (jsonMode) => fetch(API_URL, {
+  const call = (strict) => fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -102,9 +102,9 @@ async function askModel(messages) {
     body: JSON.stringify({
       model: MODEL,
       messages: [{ role: "system", content: SYSTEM }, ...messages],
-      max_tokens: 1000,
+      max_tokens: 2500,
       temperature: 0.6,
-      ...(jsonMode ? { response_format: { type: "json_object" } } : {})
+      ...(strict ? { reasoning_effort: "low", response_format: { type: "json_object" } } : {})
     })
   });
   let r = await call(true);
@@ -112,7 +112,7 @@ async function askModel(messages) {
     await new Promise(s => setTimeout(s, 1500));
     r = await call(true);
   }
-  if (r.status === 400) r = await call(false); // retry without JSON mode
+  if (r.status === 400) r = await call(false); // retry with plain settings
   return r.json();
 }
 
@@ -177,4 +177,4 @@ export default async function handler(req, res) {
     console.error("CHAT_ERROR", e);
     return res.status(500).json({ error: "server error" });
   }
-                 }
+}
