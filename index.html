@@ -13,21 +13,22 @@ nav b{font-size:20px;color:#b45309}
 .hero h1{margin:0 0 8px;font-size:34px}
 .hero p{margin:0 0 18px;font-size:17px}
 .hero a{background:#fff;color:#b45309;padding:11px 24px;border-radius:24px;font-weight:700;text-decoration:none}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;padding:24px 20px;max-width:900px;margin:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;padding:24px 20px 100px;max-width:900px;margin:auto}
 .card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08)}
 .card .pic{height:150px;display:grid;place-items:center;font-size:64px}
 .card div.t{padding:12px 14px}
 .card b{display:block}.card span{color:#16a34a;font-weight:700}
 h2{text-align:center;margin:28px 0 0}
 
-#cb-btn{position:fixed;right:18px;bottom:18px;width:60px;height:60px;border-radius:50%;border:0;background:#16a34a;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:9999}
-#cb{position:fixed;right:18px;bottom:90px;width:350px;max-width:calc(100vw - 24px);height:520px;max-height:calc(100vh - 110px);background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:none;flex-direction:column;overflow:hidden;z-index:9999}
+#cb-btn{position:fixed;right:18px;bottom:18px;width:60px;height:60px;border-radius:50%;border:0;background:#16a34a;color:#fff;font-size:28px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.3);z-index:9998}
+#cb{position:fixed;right:18px;bottom:90px;width:350px;height:520px;max-height:calc(100vh - 110px);background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.3);display:none;flex-direction:column;overflow:hidden;z-index:9999}
 #cb.open{display:flex}
 #cb-h{padding:12px 14px;border-bottom:1px solid #eef0f3;display:flex;gap:10px;align-items:center}
-.av{width:38px;height:38px;border-radius:50%;background:#16a34a;color:#fff;display:grid;place-items:center;font-weight:700}
-#cb-h div.i{flex:1}
+.av{width:38px;height:38px;border-radius:50%;background:#16a34a;color:#fff;display:grid;place-items:center;font-weight:700;flex:none}
+#cb-h div.i{flex:1;min-width:0}
 #cb-h b{display:block}#cb-h small{color:#16a34a}
 #human{font-size:12px;border:1px solid #16a34a;color:#16a34a;background:#fff;border-radius:16px;padding:5px 10px;text-decoration:none;white-space:nowrap}
+#cb-x{border:0;background:none;font-size:22px;color:#667085;cursor:pointer;display:none;padding:0 4px}
 #cb-log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
 .m{max-width:82%;padding:9px 13px;border-radius:16px;font-size:15px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word}
 .bot{background:#eef0f3;align-self:flex-start;border-bottom-left-radius:4px}
@@ -41,9 +42,14 @@ h2{text-align:center;margin:28px 0 0}
 .order a{display:block;text-align:center;background:#16a34a;color:#fff;text-decoration:none;padding:10px;border-radius:20px;font-weight:700}
 .ty{font-size:13px;color:#667085}
 #cb-f{display:flex;gap:8px;padding:10px;border-top:1px solid #eef0f3}
-#cb-t{flex:1;padding:11px 14px;border:1px solid #e1e4e8;border-radius:22px;font-size:15px;min-width:0}
+#cb-t{flex:1;padding:11px 14px;border:1px solid #e1e4e8;border-radius:22px;font-size:16px;min-width:0}
 #cb-s{border:0;background:#16a34a;color:#fff;border-radius:22px;padding:0 18px;cursor:pointer}
 #cb-s:disabled{opacity:.5}
+
+@media (max-width:600px){
+  #cb{right:0;left:0;bottom:0;top:0;width:100%;height:100dvh;max-height:none;border-radius:0}
+  #cb-x{display:block}
+}
 </style>
 </head>
 <body>
@@ -63,14 +69,19 @@ h2{text-align:center;margin:28px 0 0}
 
 <button id="cb-btn" aria-label="Chat">💬</button>
 <div id="cb">
-  <div id="cb-h"><div class="av">A</div><div class="i"><b>Amaka · Sales</b><small>● Online</small></div><a id="human" target="_blank" rel="noopener">Talk to a human</a></div>
+  <div id="cb-h">
+    <div class="av">A</div>
+    <div class="i"><b>Amaka · Sales</b><small>● Online</small></div>
+    <a id="human" target="_blank" rel="noopener">Talk to a human</a>
+    <button id="cb-x" aria-label="Close">✕</button>
+  </div>
   <div id="cb-log"></div>
   <form id="cb-f"><input id="cb-t" placeholder="Type a message…" autocomplete="off"><button id="cb-s">Send</button></form>
 </div>
 
 <script>
 // ===== EDIT THESE =====
-const API_URL = "/api/chat.js";
+const API_URL = "/api/chat";
 const AGENT = "Amaka";
 const WHATSAPP = "2348000000000"; // same number as in api/chat.js
 const WELCOME = "Hi, welcome to Lagos Fresh Fashion! I’m Amaka. What are you looking for today?";
@@ -83,14 +94,19 @@ const MEDIA = {
 // ======================
 
 const $=id=>document.getElementById(id);
-const log=$("cb-log"),form=$("cb-f"),inp=$("cb-t"),send=$("cb-s");
+const log=$("cb-log"),form=$("cb-f"),inp=$("cb-t"),send=$("cb-s"),box=$("cb");
 const history=[];
 $("human").href="https://wa.me/"+WHATSAPP+"?text="+encodeURIComponent("Hello, I need help from a person.");
 
 $("cb-btn").onclick=()=>{
-  $("cb").classList.toggle("open");
-  if(!log.children.length) msg("bot",WELCOME);
+  box.classList.toggle("open");
+  if(box.classList.contains("open")){
+    if(!log.children.length) msg("bot",WELCOME);
+    setTimeout(()=>inp.focus(),100);
+  }
 };
+$("cb-x").onclick=()=>box.classList.remove("open");
+
 function down(){log.scrollTop=log.scrollHeight}
 function msg(cls,text){const d=document.createElement("div");d.className="m "+cls;d.textContent=text;log.appendChild(d);down()}
 function media(id,isVideo){
@@ -113,17 +129,42 @@ function card(text,link,label){
   log.appendChild(d); down();
 }
 
+// Ask the backend. Tries up to 2 times and reports the real error.
+async function ask(){
+  let lastErr="unknown error";
+  for(let i=0;i<2;i++){
+    try{
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),25000);
+      const r=await fetch(API_URL,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({messages:history.slice(-20)}),
+        signal:ctrl.signal
+      });
+      clearTimeout(timer);
+      let data=null;
+      try{ data=await r.json(); }catch(e){ throw new Error("server returned "+r.status+" (not JSON)"); }
+      if(!r.ok) throw new Error(data.error||("server error "+r.status));
+      if(!data.reply && !data.order) throw new Error(data.error||"empty reply");
+      return data;
+    }catch(e){
+      lastErr=e.name==="AbortError"?"timed out":e.message;
+      if(i===0) await new Promise(s=>setTimeout(s,1200));
+    }
+  }
+  throw new Error(lastErr);
+}
+
 form.addEventListener("submit",async e=>{
   e.preventDefault();
-  const q=inp.value.trim(); if(!q) return;
+  const q=inp.value.trim(); if(!q || send.disabled) return;
   inp.value=""; msg("me",q); history.push({role:"user",content:q});
   send.disabled=true;
   const ty=document.createElement("div"); ty.className="ty"; ty.textContent=AGENT+" is typing…"; log.appendChild(ty); down();
   try{
-    const r=await fetch(API_URL,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:history.slice(-20)})});
-    const data=await r.json();
+    const data=await ask();
     ty.remove();
-    if(!data.reply && !data.order) throw new Error(data.error||"no reply");
     if(data.reply){ msg("bot",data.reply); history.push({role:"assistant",content:data.reply}); }
     (data.media||[]).forEach(m=>media(m.id,m.type==="vid"));
     if(data.order){
@@ -132,11 +173,12 @@ form.addEventListener("submit",async e=>{
     }
     if(data.handoff) card("",data.handoff.link,"Chat with a person on WhatsApp");
   }catch(err){
-    ty.remove(); msg("bot","Sorry, network issue. ("+err.message+")");
+    ty.remove();
+    msg("bot","Sorry, network issue. ("+err.message+")");
     history.pop(); // drop the failed question so the chat stays in order
   }
   send.disabled=false; inp.focus();
 });
 </script>
 </body>
-</html>
+  </html>
