@@ -5,7 +5,7 @@ const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const BUSINESS = {
   name: "Lagos Fresh Fashion",
   agent: "Amaka",
-  whatsapp: "2348000000000", // your number, format 234XXXXXXXXXX (no leading 0)
+  whatsapp: "2347016706259", // your number, format 234XXXXXXXXXX (no leading 0)
   location: "Lagos, Nigeria",
   hours: "Mon-Sat, 9am-6pm",
   delivery: "Lagos: 1-2 days. Other states: 3-5 days. Delivery fee is confirmed by the owner.",
