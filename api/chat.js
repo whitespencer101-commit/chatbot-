@@ -1,10 +1,11 @@
-const MODEL = "gemini-flash-latest";
+const MODEL = "llama-3.3-70b-versatile";
+const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 // ===== EDIT YOUR VERIFIED BUSINESS DATA =====
 const BUSINESS = {
   name: "Lagos Fresh Fashion",
   agent: "Amaka",
-  whatsapp: "2347016706259", // your number, format 234XXXXXXXXXX (no leading 0)
+  whatsapp: "2348000000000", // your number, format 234XXXXXXXXXX (no leading 0)
   location: "Lagos, Nigeria",
   hours: "Mon-Sat, 9am-6pm",
   delivery: "Lagos: 1-2 days. Other states: 3-5 days. Delivery fee is confirmed by the owner.",
@@ -91,29 +92,27 @@ function parseModel(raw) {
   return { reply: txt, send_media: [], action: { type: "none" } };
 }
 
-async function askGemini(contents) {
-  const call = () => fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": process.env.API_KEY },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM }] },
-        contents,
-        generationConfig: {
-          maxOutputTokens: 2000,
-          temperature: 0.7,
-          responseMimeType: "application/json",
-          thinkingConfig: { thinkingBudget: 0 }
-        }
-      })
-    }
-  );
-  let r = await call();
+async function askModel(messages) {
+  const call = (jsonMode) => fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + process.env.API_KEY
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages: [{ role: "system", content: SYSTEM }, ...messages],
+      max_tokens: 1000,
+      temperature: 0.6,
+      ...(jsonMode ? { response_format: { type: "json_object" } } : {})
+    })
+  });
+  let r = await call(true);
   if (r.status === 429 || r.status >= 500) {
-    await new Promise(s => setTimeout(s, 1200));
-    r = await call();
+    await new Promise(s => setTimeout(s, 1500));
+    r = await call(true);
   }
+  if (r.status === 400) r = await call(false); // retry without JSON mode
   return r.json();
 }
 
@@ -123,17 +122,17 @@ export default async function handler(req, res) {
   let body = {};
   try { body = typeof req.body === "string" ? JSON.parse(req.body) : req.body || {}; } catch {}
 
-  const contents = (Array.isArray(body.messages) ? body.messages : [])
+  const messages = (Array.isArray(body.messages) ? body.messages : [])
     .slice(-20)
     .filter(m => (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
-    .map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content.slice(0, 1000) }] }));
-  if (!contents.length || contents[contents.length - 1].role !== "user") {
+    .map(m => ({ role: m.role, content: m.content.slice(0, 1000) }));
+  if (!messages.length || messages[messages.length - 1].role !== "user") {
     return res.status(400).json({ error: "no messages" });
   }
 
   try {
-    const data = await askGemini(contents);
-    const raw = data.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("");
+    const data = await askModel(messages);
+    const raw = data.choices?.[0]?.message?.content;
     if (!raw) {
       console.error("PROVIDER_ERROR", JSON.stringify(data).slice(0, 500));
       return res.status(502).json({ error: data.error?.message || "provider error" });
@@ -178,4 +177,4 @@ export default async function handler(req, res) {
     console.error("CHAT_ERROR", e);
     return res.status(500).json({ error: "server error" });
   }
-}
+                 }
